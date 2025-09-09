@@ -602,7 +602,7 @@
 				else
 					to_chat(c, span_warning("A divine curse strikes you for destroying the sacred tree!"))
 					c.adjustFireLoss(100)
-					c.IgniteMob()
+					c.ignite_mob()
 					c.add_stress(/datum/stressevent/psycurse)
 			record_featured_stat(FEATURED_STATS_TREE_FELLERS, user)
 			GLOB.azure_round_stats[STATS_TREES_CUT]++
@@ -1091,7 +1091,7 @@
 		var/mob/living/carbon/human/H = eater
 		if(HAS_TRAIT(H, TRAIT_UNSEEMLY))
 			REMOVE_TRAIT(H, TRAIT_UNSEEMLY, TRAIT_VIRTUE)
-			H.change_stat("constitution", -1)
+			H.change_stat(STATKEY_CON, -1)
 			to_chat(eater, span_good("You feel your imperfections melt away, but your body feels more fragile."))
 
 // TIER 3
