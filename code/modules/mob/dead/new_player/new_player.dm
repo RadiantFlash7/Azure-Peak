@@ -426,11 +426,13 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	if(job.plevel_req > client.patreonlevel())
 		testing("PATREONLEVEL [client.patreonlevel()] req [job.plevel_req]")
 		return JOB_UNAVAILABLE_GENERIC
+	#ifdef USES_PQ
 	if(!job.required || latejoin)
 		if(!isnull(job.min_pq) && (get_playerquality(ckey) < job.min_pq))
 			return JOB_UNAVAILABLE_GENERIC
 		if(!isnull(job.max_pq) && (get_playerquality(ckey) > job.max_pq))
 			return JOB_UNAVAILABLE_GENERIC
+	#endif
 	var/datum/species/pref_species = client.prefs.pref_species
 	if(length(job.allowed_races) && !(pref_species.type in job.allowed_races))
 		return JOB_UNAVAILABLE_RACE
@@ -773,6 +775,7 @@ GLOBAL_LIST_INIT(roleplay_readme, world.file2list("strings/rt/rp_prompt.txt"))
 	src << browse(null, "window=mob_occupation")
 	src << browse(null, "window=latechoices") //closes late job selection
 	src << browse(null, "window=migration") // Closes migrant menu
+	src << browse(null, "window=familiar_prefs") // Closes familiar prefs menu
 
 	SStriumphs.remove_triumph_buy_menu(client)
 
