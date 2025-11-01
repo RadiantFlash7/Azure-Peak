@@ -44,7 +44,7 @@
 	switch(riteselection) // rite selection goes in this section, try to do something fluffy. Presentation is most important here, truthfully.
 		if("Guiding Light") // User selects Guiding Light, begins the stuff for it
 			if(do_after(user, 50)) // just flavor stuff before activation
-				user.say("I beseech the she-form of the Twinned God!!")
+				user.say("I beseech the guidance of the Sun!!")
 				if(do_after(user, 50))
 					user.say("To bring Order to a world of naught!!")
 					if(do_after(user, 50))
@@ -94,7 +94,7 @@
 	switch(riteselection) // put ur rite selection here
 		if("Moonlight Dance")
 			if(do_after(user, 50))
-				user.say("I beseech the he-form of the Twinned God!!")
+				user.say("I beseech the guidance of the Moon!!")
 				if(do_after(user, 50))
 					user.say("To bring Wisdom to a world of naught!!")
 					if(do_after(user, 50))
@@ -1150,7 +1150,7 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 	backr = /obj/item/rogueweapon/sword/long/zizo
 	neck = /obj/item/clothing/neck/roguetown/bevor
 
-
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/mending/lesser)
 
 
 /obj/structure/ritualcircle/matthios
@@ -1310,6 +1310,8 @@ var/forgerites = list("Ritual of Blessed Reforgance")
 	head = /obj/item/clothing/head/roguetown/helmet/heavy/matthios
 	neck = /obj/item/clothing/neck/roguetown/chaincoif/chainmantle
 	backr = /obj/item/rogueweapon/flail/peasantwarflail/matthios
+
+	H.mind.AddSpell(new /obj/effect/proc_holder/spell/invoked/mending/lesser)
 
 
 /obj/structure/ritualcircle/graggar

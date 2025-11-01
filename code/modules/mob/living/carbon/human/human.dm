@@ -62,7 +62,6 @@
 #ifdef MATURESERVER
 	sexcon = new /datum/sex_controller(src)
 #endif
-	verbs += /mob/living/proc/mob_sleep
 	verbs += /mob/living/proc/lay_down
 
 	icon_state = ""		//Remove the inherent human icon that is visible on the map editor. We're rendering ourselves limb by limb, having it still be there results in a bug where the basic human icon appears below as south in all directions and generally looks nasty.
@@ -125,11 +124,6 @@
 	randomize_human(src)
 	dna.initialize_dna()
 
-/mob/living/carbon/human/ComponentInitialize()
-	. = ..()
-	if(!CONFIG_GET(flag/disable_human_mood))
-		AddComponent(/datum/component/mood)
-
 /mob/living/carbon/human/Destroy()
 	QDEL_NULL(sexcon)
 	STOP_PROCESSING(SShumannpc, src)
@@ -141,10 +135,10 @@
 /mob/living/carbon/human/Stat()
 	..()
 	if(mind)
-		var/datum/antagonist/vampirelord/VD = mind.has_antag_datum(/datum/antagonist/vampirelord)
+		var/datum/antagonist/vampire/VD = mind.has_antag_datum(/datum/antagonist/vampire)
 		if(VD)
 			if(statpanel("Stats"))
-				stat("Vitae:",VD.vitae)
+				stat("Vitae:", bloodpool)
 		if((mind.assigned_role == "Shepherd") || (mind.assigned_role == "Inquisitor"))
 			if(statpanel("Status"))
 				stat("Confessions sent: [GLOB.confessors.len]")
@@ -303,18 +297,6 @@
 /mob/living/carbon/human/proc/canUseHUD()
 	return (mobility_flags & MOBILITY_USE)
 
-///Checking if the unit can bite
-/mob/living/carbon/human/proc/can_bite()
-	//if(mouth?.muteinmouth && mouth?.type != /obj/item/grabbing/bite) //This one allows continued first biting rather than having to chew
-	if(mouth?.muteinmouth)
-		return FALSE
-	for(var/obj/item/grabbing/grab in grabbedby) //Grabbed by the mouth
-		if(grab.sublimb_grabbed == BODY_ZONE_PRECISE_MOUTH)
-			return FALSE
-			
-	return TRUE
-
-
 /mob/living/carbon/human/can_inject(mob/user, error_msg, target_zone, penetrate_thick = 0)
 	. = 1 // Default to returning true.
 	if(user && !target_zone)
@@ -375,7 +357,6 @@
 			return
 
 		src.visible_message(span_notice("[src] performs CPR on [C.name]!"), span_notice("I perform CPR on [C.name]."))
-		SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "perform_cpr", /datum/mood_event/perform_cpr)
 		C.cpr_time = world.time
 		log_combat(src, C, "CPRed")
 
@@ -451,6 +432,18 @@
 			R.fields["name"] = newname
 
 /mob/living/carbon/human/get_total_tint()
+	if(isdullahan(src))
+		var/datum/species/dullahan/species = dna.species
+		var/obj/item/bodypart/head/dullahan/user_head = species.my_head
+		if(species.headless && user_head)
+			var/obj/item/organ/dullahan_vision/vision = getorganslot(ORGAN_SLOT_HUD)
+
+			if(vision && vision.viewing_head && user_head.eyes)
+				. = user_head.eyes.tint
+			else
+				. = INFINITY
+			return
+
 	. = ..()
 	if(glasses)
 		. += glasses.tint
@@ -615,11 +608,6 @@
 /mob/living/carbon/human/can_hold_items()
 	return TRUE
 
-/mob/living/carbon/human/update_gravity(has_gravity,override = 0)
-	if(dna && dna.species) //prevents a runtime while a human is being monkeyfied
-		override = dna.species.override_float
-	..()
-
 /mob/living/carbon/human/vomit(lost_nutrition = 10, blood = 0, stun = 1, distance = 0, message = 1, toxic = 0)
 	if(blood && (NOBLOOD in dna.species.species_traits) && !HAS_TRAIT(src, TRAIT_TOXINLOVER))
 		if(message)
@@ -646,29 +634,28 @@
 			return
 		if(!client || !client.prefs)
 			return
-		if(alert(usr,"This will irreversibly an INDIVIDUAL PORTION of this slot. Is this what you want?","DON'T FATFINGER THIS","PURGE","Nevermind") == "PURGE")
+		if(alert(usr,"This will irreversibly purge an INDIVIDUAL PORTION of this slot. Is this what you want?","DON'T FATFINGER THIS","PURGE","Nevermind") == "PURGE")
 			if(alert(usr,"The next prompt will not have a Nevermind option. Are you sure you want this?","ITS NOT REVERSIBLE","Yes","Nevermind") == "Yes")
 				var/choice = alert(usr,"What would you like to purge?","ITS TOO LATE NOW","Flavor","Notes","Extra")
 				if(choice)
 					switch(choice)
 						if("Flavor")
-							is_legacy = FALSE
 							flavortext = null
-							flavortext_display = null
+							nsfwflavortext = null
 							client.prefs?.flavortext = null
-							client.prefs?.flavortext_display = null
 						if("Notes")
-							is_legacy = FALSE
 							ooc_notes = null
-							ooc_notes_display = null
+							erpprefs = null
 							client.prefs?.ooc_notes = null
-							client.prefs?.ooc_notes_display = null
 						if("Extra")
-							is_legacy = FALSE
-							ooc_extra_link = null
 							ooc_extra = null
+							song_artist = null
+							song_title = null
+							client.prefs?.song_artist = null
+							client.prefs?.song_title = null
 							client.prefs?.ooc_extra = null
-							client.prefs?.ooc_extra_link = null
+							img_gallery = list()
+							client.prefs?.img_gallery = list()
 						else
 							return
 					client.prefs?.save_preferences()
@@ -682,20 +669,22 @@
 		if(alert(usr,"This will irreversibly purge this ENTIRE character's slot (OOC, FT, OOC Ex.)","PURGE","PURGE","Nevermind") == "PURGE")
 			if(alert(usr,"This cannot be undone. Are you sure?","DON'T FATFINGER THIS","Yes","No") == "Yes")
 				flavortext = null
-				flavortext_display = null
-				is_legacy = FALSE
+				nsfwflavortext = null
+				erpprefs = null
 				ooc_notes = null
-				ooc_notes_display = null
 				ooc_extra = null
-				ooc_extra_link = null
+				song_artist = null
+				song_title = null
+				img_gallery = list()
 				if(client)
 					client.prefs?.flavortext = null
-					client.prefs?.flavortext_display = null
-					client.prefs?.is_legacy = FALSE
+					client.prefs?.nsfwflavortext = null
+					client.prefs?.erpprefs = null
 					client.prefs?.ooc_notes = null
-					client.prefs?.ooc_notes_display = null
 					client.prefs?.ooc_extra = null
-					client.prefs?.ooc_extra_link = null
+					client.prefs?.song_artist = null
+					client.prefs?.song_title = null
+					client.prefs?.img_gallery = list()
 					client.prefs?.save_preferences()
 					client.prefs?.save_character()
 					to_chat(usr, span_warn("Slot purged successfully."))
@@ -720,22 +709,27 @@
 			admin_ticket_log("[key_name_admin(usr)] has modified the bodyparts of [src] to [result]")
 			set_species(newtype)
 
-/mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
-	if(pulling == target && stat == CONSCIOUS)
-		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback (not on cmode)
-		if(user == target && can_piggyback(target))
-			if(cmode)
-				to_chat(target, span_warning("[src] won't let you on!"))
-				return FALSE
-			piggyback(target)
-			return TRUE
-		//If you dragged them to you and you're aggressively grabbing try to carry them
-		else if(user != target && can_be_firemanned(target))
-			var/obj/G = get_active_held_item()
-			if(G)
-				if(istype(G, /obj/item/grabbing))
-					fireman_carry(target)
-					return TRUE
+/mob/living/carbon/human/MouseDrop_T(atom/dragged, mob/living/user)
+	if(istype(dragged, /mob/living))
+		var/mob/living/target = dragged
+		if(pulling == target && stat == CONSCIOUS)
+			//If they dragged themselves and we're currently aggressively grabbing them try to piggyback (not on cmode)
+			if(user == target && can_piggyback(target))
+				if(cmode)
+					to_chat(target, span_warning("[src] won't let you on!"))
+					return FALSE
+				piggyback(target)
+				return TRUE
+			//If you dragged them to you and you're aggressively grabbing try to carry them
+			else if(user != target && can_be_firemanned(target))
+				var/obj/G = get_active_held_item()
+				if(G)
+					if(istype(G, /obj/item/grabbing))
+						fireman_carry(target)
+						return TRUE
+	else if(istype(dragged, /obj/item/bodypart/head/dullahan/))
+		var/obj/item/bodypart/head/dullahan/item_head = dragged
+		item_head.show_inv(user)
 	. = ..()
 
 //src is the user that will be carrying, target is the mob to be carried
@@ -894,6 +888,12 @@
 /mob/living/carbon/human/proc/is_virile()
 	var/obj/item/organ/testicles/testicles = getorganslot(ORGAN_SLOT_TESTICLES)
 	return testicles.virility
+
+/mob/living/carbon/human/update_mobility()
+	. = ..()
+	if(!(mobility_flags & MOBILITY_CANSTAND) && mouth?.spitoutmouth)
+		visible_message(span_warning("[src] spits out [mouth]."))
+		dropItemToGround(mouth, silent = FALSE)
 
 /*/mob/living/carbon/human/proc/update_heretic_commune()
 	if(HAS_TRAIT(src, TRAIT_COMMIE) || HAS_TRAIT(src, TRAIT_CABAL) || HAS_TRAIT(src, TRAIT_HORDE) || HAS_TRAIT(src, TRAIT_DEPRAVED))

@@ -1,7 +1,7 @@
 /datum/job/roguetown/veteran
 	title = "Veteran"
 	flag = VETERAN
-	department_flag = MERCENARIES
+	department_flag = WANDERERS
 	faction = "Station"
 	total_positions = 1
 	spawn_positions = 1
@@ -11,6 +11,7 @@
 	tutorial = "You've known combat your entire life. There isn't a way to kill a man you havent practiced in the tapestries of war itself. You wouldn't call yourself a hero--those belong to the men left rotting in the fields where you honed your ancient trade. You don't sleep well at night anymore, you don't like remembering what you've had to do to survive. Trading adventure for stable pay was the only logical solution, and maybe someday you'll get to lay down the blade and rest your weary body..."
 	allowed_ages = list(AGE_MIDDLEAGED, AGE_OLD)
 	advclass_cat_rolls = list(CTAG_VETERAN = 20)
+	selection_color = JCOLOR_WANDERER
 	display_order = JDO_VET
 	whitelist_req = TRUE
 	give_bank_account = 35
@@ -35,9 +36,6 @@
 	. = ..()
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
 		if(istype(H.cloak, /obj/item/clothing/cloak/half/vet))
 			var/obj/item/clothing/S = H.cloak
 			var/index = findtext(H.real_name, " ")
@@ -85,14 +83,15 @@
 
 // Normal veteran start, from the olden days.
 
+/datum/outfit/job/roguetown/vet/battlemaster
+	has_loadout = TRUE
+
 /datum/outfit/job/roguetown/vet/battlemaster/pre_equip(mob/living/carbon/human/H)
 	neck = /obj/item/clothing/neck/roguetown/bevor
 	armor = /obj/item/clothing/suit/roguetown/armor/plate/scale
 	shirt = /obj/item/clothing/suit/roguetown/armor/chainmail
 	pants = /obj/item/clothing/under/roguetown/chainlegs
 	shoes = /obj/item/clothing/shoes/roguetown/boots/armor
-	l_hand = /obj/item/rogueweapon/sword/sabre
-	beltl = /obj/item/rogueweapon/scabbard/sword
 	beltr = /obj/item/storage/keyring/guardcastle
 	backr = /obj/item/storage/backpack/rogue/satchel/black
 	cloak = /obj/item/clothing/cloak/half/vet
@@ -101,13 +100,28 @@
 		/obj/item/rogueweapon/huntingknife/idagger/steel/special = 1,
 		/obj/item/rogueweapon/scabbard/sheath = 1
 		)
+	H.verbs |= /mob/proc/haltyell
+
+/datum/outfit/job/roguetown/vet/battlemaster/choose_loadout(mob/living/carbon/human/H)
+	. = ..()
 	if(H.age == AGE_OLD)
 		H.adjust_skillrank_up_to(/datum/skill/combat/swords, 6, TRUE)
 		H.adjust_skillrank_up_to(/datum/skill/combat/maces, 6, TRUE)
 		H.adjust_skillrank_up_to(/datum/skill/combat/wrestling, 5, TRUE)
 		H.change_stat(STATKEY_WIL, 1)
 
-	H.verbs |= /mob/proc/haltyell
+	H.adjust_blindness(-3)
+	if(H.mind)
+		var/weapons = list("Longsword","Sabre")
+		var/weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+		H.set_blindness(0)
+		switch(weapon_choice)
+			if("Longsword")
+				H.put_in_hands(new /obj/item/rogueweapon/sword/long)
+				H.equip_to_slot_or_del(new /obj/item/rogueweapon/scabbard/sword, SLOT_BELT_L)
+			if("Sabre")
+				H.put_in_hands(new /obj/item/rogueweapon/sword/sabre)
+				H.equip_to_slot_or_del(new /obj/item/rogueweapon/scabbard/sword, SLOT_BELT_L)
 
 /datum/advclass/veteran/footman
 	name = "Retired Footman"
@@ -242,7 +256,7 @@
 	H.adjust_blindness(-3)
 	if(H.mind)
 		var/weapons = list("Sword + Recurve Bow","Axe + Crossbow","Spear + Shield")
-		var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+		var/weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 		H.set_blindness(0)
 		switch(weapon_choice)
 			if("Sword + Recurve Bow")
@@ -331,18 +345,19 @@
 	H.adjust_blindness(-3)
 	if(H.mind)
 		var/weapons = list("Zweihander","Halberd")
-		var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+		var/weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 		H.set_blindness(0)
 		switch(weapon_choice)
 			if("Zweihander")
-				r_hand = /obj/item/rogueweapon/greatsword/grenz
+				H.put_in_hands(new /obj/item/rogueweapon/greatsword/grenz)
 				H.adjust_skillrank(/datum/skill/combat/swords, 1, TRUE)
 				H.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
-				backl = /obj/item/rogueweapon/scabbard/gwstrap
+				H.equip_to_slot_or_del(new /obj/item/rogueweapon/scabbard/gwstrap, SLOT_BACK_L)
 			if("Halberd")
-				r_hand = /obj/item/rogueweapon/halberd
+				H.put_in_hands(new /obj/item/rogueweapon/halberd)
 				H.adjust_skillrank(/datum/skill/combat/axes, 1, TRUE) // SO, fun fact. The description of the grenzel halbardier says they specialize in axes, but they get no axe skill. Maybe this guy is where that rumor came from.
 				H.adjust_skillrank(/datum/skill/combat/polearms, 1, TRUE)
+				H.equip_to_slot_or_del(new /obj/item/rogueweapon/scabbard/gwstrap, SLOT_BACK_L)
 
 /datum/advclass/veteran/scout
 	name = "Former Scout"

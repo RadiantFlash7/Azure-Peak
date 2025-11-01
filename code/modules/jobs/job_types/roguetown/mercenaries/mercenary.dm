@@ -1,7 +1,7 @@
 /datum/job/roguetown/mercenary
 	title = "Mercenary"
-	flag = MERCENARY
-	department_flag = MERCENARIES
+	flag = WANDERERS
+	department_flag = WANDERERS
 	faction = "Station"
 	total_positions = 8
 	spawn_positions = 8
@@ -9,17 +9,18 @@
 	allowed_races = RACES_ALL_KINDS
 	tutorial = "Blood stains your hands and the coins you hold. You are a sell-sword, a mercenary, a contractor of war. Where you come from, what you are, who you serve.. none of it matters. What matters is that the mammon flows to your pocket."
 	display_order = JDO_MERCENARY
-	selection_color = JCOLOR_MERCENARY
+	selection_color = JCOLOR_WANDERER
 	min_pq = 2		//Will be handled by classes if PQ limiting is needed. --But Until then, learn escalation, mercs.
 	max_pq = null
 	round_contrib_points = 1
 	outfit = null	//Handled by classes
 	outfit_female = null
 	advclass_cat_rolls = list(CTAG_MERCENARY = 20)
-	job_traits = list(TRAIT_OUTLANDER, TRAIT_STEELHEARTED)
+	job_traits = list(TRAIT_STEELHEARTED)
 	always_show_on_latechoices = TRUE
 	class_categories = TRUE
 	job_subclasses = list(
+		/datum/advclass/mercenary/anthrax,
 		/datum/advclass/mercenary/atgervi,
 		/datum/advclass/mercenary/atgervi/shaman,
 		/datum/advclass/mercenary/condottiero,
@@ -33,6 +34,7 @@
 		/datum/advclass/mercenary/grenzelhoft,
 		/datum/advclass/mercenary/grenzelhoft/halberdier,
 		/datum/advclass/mercenary/grenzelhoft/crossbowman,
+		/datum/advclass/mercenary/grenzelhoft/mage,
 		/datum/advclass/mercenary/routier,
 		/datum/advclass/mercenary/rumaclan,
 		/datum/advclass/mercenary/rumaclan/sasu,
@@ -47,11 +49,3 @@
 		/datum/advclass/mercenary/grudgebearer,
 		/datum/advclass/mercenary/grudgebearer/soldier
 	)
-
-/datum/job/roguetown/mercenary/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
-	..()
-	if(L)
-		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")

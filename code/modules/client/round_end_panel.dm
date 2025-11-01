@@ -111,16 +111,19 @@
 	data += "<div style='display: inline-block; text-align: left; margin-left: auto; margin-right: auto;'>"
 	
 	var/stat_is_object = GLOB.featured_stats[current_featured]["object_stat"]
+	var/stat_is_admin_only = GLOB.featured_stats[current_featured]["admin_only"]
 	var/has_entries = length(GLOB.featured_stats[current_featured]["entries"])
 
-	if(has_entries)
+	if(stat_is_admin_only && !holder)
+		data += "<div style='margin-top: 20px;'>Admin Eyes Only...</div>"
+	else if(has_entries)
 		if(stat_is_object)
 			data += format_top_stats_objects(current_featured)
 		else
 			data += format_top_stats(current_featured)
 	else
 		data += "<div style='margin-top: 20px;'>[stat_is_object ? "None" : "Nobody"]</div>"
-	
+
 	data += "</div>"
 	data += "</div>"
 	data += "</div>"
@@ -555,7 +558,8 @@
 			data += "<div style='margin-bottom: 4px;'><font color='#db9a59'>Trade Value Exported: </font>[GLOB.azure_round_stats[STATS_TRADE_VALUE_EXPORTED]]</div>"
 			data += "<div style='margin-bottom: 4px;'><font color='#dfbf57'>Trade Value Imported: </font>[GLOB.azure_round_stats[STATS_TRADE_VALUE_IMPORTED]]</div>"
 			data += "<div style='margin-bottom: 4px;'><font color='#c0b283'>GOLDFACE Imports: </font>[GLOB.azure_round_stats[STATS_GOLDFACE_VALUE_SPENT]]</div>"
-			data += "<div style='margin-bottom: 4px;'><font color='#c0b283'>SILVERFACE Imports: </font>[GLOB.azure_round_stats[STATS_SILVERFACE_VALUE_SPENT]]</div>"
+			data += "<div style='margin-bottom: 4px;'><font color='#c0c0c0'>SILVERFACE Imports: </font>[GLOB.azure_round_stats[STATS_SILVERFACE_VALUE_SPENT]]</div>"
+			data += "<div style='margin-bottom: 4px;'><font color='#b87333'>COPPERFACE Imports: </font>[GLOB.azure_round_stats[STATS_COPPERFACE_VALUE_SPENT]]</div>"
 			data += "<div style='margin-bottom: 4px;'><font color='#b5a642'>PURITY Imports: </font>[GLOB.azure_round_stats[STATS_PURITY_VALUE_SPENT]]</div>"
 			data += "<div><font color='#7495d3'>Peddler Revenue: </font>[GLOB.azure_round_stats[STATS_PEDDLER_REVENUE]]</div>"
 			data += "</div></div>"

@@ -295,7 +295,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			to_chat(user, span_warning("I can't get the words out!"))
 			return FALSE
 
-		if(HAS_TRAIT(H, TRAIT_PARALYSIS))
+		if(HAS_TRAIT(H, TRAIT_PARALYSIS) && !stat_allowed)
 			to_chat(user, span_warning("My body is paralyzed!"))
 			return FALSE
 
@@ -384,7 +384,8 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			else
 				user.whisper(chosen_invocation)
 		if("emote")
-			user.visible_message(chosen_invocation, invocation_emote_self) //same style as in mob/living/emote.dm
+			var/emote_incantation = "<b>[usr.real_name]</b> [chosen_invocation]"
+			user.visible_message(emote_incantation, emote_incantation) //this is stupid, but it works.
 
 /obj/effect/proc_holder/spell/proc/playMagSound()
 	var/ss = sound
@@ -726,7 +727,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 		if(ishuman(user) && !living_user.getorganslot(ORGAN_SLOT_TONGUE)) // Shapeshifter has no tongue yeah
 			return FALSE
 
-	if(HAS_TRAIT(user, TRAIT_PARALYSIS))
+	if(HAS_TRAIT(user, TRAIT_PARALYSIS) && !stat_allowed)
 		return FALSE
 
 	return TRUE

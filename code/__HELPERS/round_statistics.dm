@@ -60,6 +60,7 @@
 #define STATS_TRADE_VALUE_IMPORTED "trade_imported"
 #define STATS_GOLDFACE_VALUE_SPENT "goldface_spent"
 #define STATS_SILVERFACE_VALUE_SPENT "silverface_spent"
+#define STATS_COPPERFACE_VALUE_SPENT "copperface_spent"
 #define STATS_PURITY_VALUE_SPENT "purity_spent"
 #define STATS_TAXES_EVADED "taxes_evaded"
 #define STATS_NOBLE_INCOME_TOTAL "noble_income_total"
@@ -304,6 +305,7 @@ GLOBAL_LIST_INIT(azure_round_stats, list(
 	STATS_TRADE_VALUE_IMPORTED = 0,
 	STATS_GOLDFACE_VALUE_SPENT = 0,
 	STATS_SILVERFACE_VALUE_SPENT = 0,
+	STATS_COPPERFACE_VALUE_SPENT = 0,
 	STATS_PURITY_VALUE_SPENT = 0,
 	STATS_TAXES_EVADED = 0,
 	STATS_NOBLE_INCOME_TOTAL = 0,
@@ -337,6 +339,9 @@ GLOBAL_LIST_EMPTY(patron_follower_counts)
 #define FEATURED_STATS_CRAFTERS "crafters"
 #define FEATURED_STATS_FARMERS "farmers"
 #define FEATURED_STATS_STORYTELLERS "storytellers"
+#define FEATURED_STATS_VIRTUES	"virtues"
+#define FEATURED_STATS_STATPACKS "statpacks"
+#define FEATURED_STATS_VICES	"vices"
 
 // Featured objects stats
 #define FEATURED_STATS_CRAFTED_ITEMS "crafted_items"
@@ -431,13 +436,32 @@ GLOBAL_LIST_INIT(featured_stats, list(
 		"color" = "#9eaceb",
 		"entries" = list()
 	),
+
 	FEATURED_STATS_SPELLS = list(
 		"name" = "TOP Spells",
 		"color" = "#6375c5",
 		"entries" = list(),
 		"object_stat" = TRUE
+	),	FEATURED_STATS_VIRTUES = list(
+		"name" = "TOP 10 Virtues",
+		"color" = "#df5cb8",
+		"entries" = list(),
+		"object_stat" = TRUE,
+		"admin_only" = TRUE
 	),
-))
+	FEATURED_STATS_STATPACKS = list(
+		"name" = "TOP 10 Statpacks",
+		"color" = "#3aa4e2",
+		"entries" = list(),
+		"object_stat" = TRUE,
+		"admin_only" = TRUE
+	),
+	FEATURED_STATS_VICES = list(
+		"name" = "TOP 10 Vices",
+		"color" = "#791368",
+		"entries" = list(),
+		"object_stat" = TRUE
+	),))
 
 // Chronicle statistics
 #define CHRONICLE_STATS_STRONGEST_PERSON "strongest_person"

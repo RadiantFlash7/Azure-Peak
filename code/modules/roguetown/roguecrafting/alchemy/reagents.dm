@@ -294,6 +294,29 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 			M.adjustToxLoss(4.5) // just enough so 5u will kill you dead with no help
 	return ..()
 
+/datum/reagent/bloodacid // Quietus Poison for Vampires
+	name = "Vitae Acid"
+	description = ""
+	reagent_state = LIQUID
+	color = "#ff3300"
+	taste_description = "burning"
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
+	harmful = TRUE
+
+/datum/reagent/bloodacid/on_mob_life(mob/living/carbon/M)
+	if(volume > 0.09)
+		if(isdwarf(M))
+			M.add_nausea(5.5)
+			M.adjustToxLoss(7.5) 
+			to_chat(M, span_userdanger("MY HEART! I'VE BEEN POISONED."))
+			M.playsound_local('sound/magic/heartbeat.ogg', 50)
+		else
+			M.add_nausea(6.5) 
+			M.adjustToxLoss(8.5) 
+			to_chat(M, span_userdanger("MY HEART! I'VE BEEN POISONED."))
+			M.playsound_local('sound/magic/heartbeat.ogg', 50)
+	return ..()
+
 /datum/reagent/organpoison
 	name = "Organ Poison"
 	description = ""
@@ -480,3 +503,48 @@ If you want to expand on poisons theres tons of fun effects TG chemistry has tha
 	if(M.has_status_effect(/datum/status_effect/debuff/ritualdefiled))
 		M.remove_status_effect(/datum/status_effect/debuff/ritualdefiled)
 	return ..()
+
+/datum/reagent/fire_resist
+	name = "Fire Resistance"
+	color = "#ff7300"
+	taste_description = "burning coal"
+
+/datum/reagent/fire_resist/on_mob_life(mob/living/carbon/M)
+	M.apply_status_effect(/datum/status_effect/buff/alch/fire_resist)
+	return ..()
+
+/datum/reagent/fermented_crab
+	name = "Fermented Crab"
+	description = ""
+	color = "#abaa7c"
+	overdose_threshold = 15
+	metabolization_rate = 0.2
+	taste_description = "randcid, putrid crab"
+
+/datum/reagent/fermented_crab/overdose_process(mob/living/M)
+	M.adjustToxLoss(1, FALSE)
+	if(iscarbon(M) && prob(1))
+		var/mob/living/carbon/carbon_consumer = M
+		carbon_consumer.vomit(1)
+	return ..()
+
+/datum/reagent/fermented_crab/on_mob_metabolize(mob/living/M)
+	var/mob/living/carbon/carbon_consumer = M
+	if(!istype(carbon_consumer))
+		return ..()
+	to_chat(M, span_userdanger("That fermented crab was truly rancid... You feel..."))
+	// Default chance to vomit with WIL 12 - 40%
+	// With WIL 10 - 48%; With WIL 14 - 32% and so on.
+	if(prob(40 - ((M.STAWIL - 12) * 4)))
+		to_chat(M, span_userdanger("You suddenly feel very sick... Mayhaps, eating the fermented crab wasn't the best idea..."))
+		carbon_consumer.vomit(5, blood = FALSE, stun = TRUE)
+		M.add_stress(/datum/stressevent/fermented_crab_bad)
+	else
+		to_chat(M, span_userdanger("You feel a bit queasy, but otherwise okay. And even greatly invigorated!"))
+		M.add_stress(/datum/stressevent/fermented_crab_good)
+	M.apply_status_effect(/datum/status_effect/buff/fermented_crab)
+	return ..()
+
+/datum/reagent/fermented_crab/overdose_start(mob/living/M)
+	M.playsound_local(M, 'sound/magic/heartbeat.ogg', 100, FALSE)
+	M.visible_message(span_warning("Blood runs from [M]'s nose."))

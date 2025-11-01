@@ -94,6 +94,8 @@ GLOBAL_LIST_EMPTY(personal_objective_minds)
 
 	var/list/notes = list() //RTD add notes button
 
+	var/active_quest = 0 //if you dont take any quest its 0. Max 2 quests for one player
+
 	var/lastrecipe
 
 	var/datum/sleep_adv/sleep_adv = null
@@ -162,8 +164,10 @@ GLOBAL_LIST_EMPTY(personal_objective_minds)
 			else
 				referred_gender = "Androgynous"
 		known_people[H.real_name]["FGENDER"] = referred_gender
+		if(H.dna && H.dna.species)
+			known_people[H.real_name]["FSPECIES"] = H.dna.species.name
 		known_people[H.real_name]["FAGE"] = H.age
-		if (ishuman(current))
+		if(ishuman(current))
 			var/mob/living/carbon/human/C = current
 			var/heretic_text = H.get_heretic_symbol(C)
 			if (heretic_text)
@@ -708,11 +712,13 @@ GLOBAL_LIST_EMPTY(personal_objective_minds)
 		add_antag_datum(/datum/antagonist/traitor)
 
 
-/datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S)
+/datum/mind/proc/AddSpell(obj/effect/proc_holder/spell/S, mob/living/user)
 	if(!S)
 		return
 	spell_list += S
 	S.action.Grant(current)
+	if(user)
+		S.on_gain(user)
 
 /datum/mind/proc/check_learnspell()
 	if(!has_spell(/obj/effect/proc_holder/spell/self/learnspell)) //are we missing the learning spell?
@@ -734,6 +740,18 @@ GLOBAL_LIST_EMPTY(personal_objective_minds)
 			return TRUE
 	return FALSE
 
+/datum/mind/proc/get_spell(spell_type, specific = FALSE)
+	var/spell_path = spell_type
+	if(istype(spell_type, /obj/effect/proc_holder))
+		var/obj/effect/proc_holder/instanced_spell = spell_type
+		spell_path = instanced_spell.type
+	for(var/obj/effect/proc_holder/spell as anything in spell_list)
+		if(specific && (spell.type == spell_path))
+			return spell
+		else if(!specific && istype(spell, spell_path))
+			return spell
+	return FALSE
+
 /datum/mind/proc/owns_soul()
 	return soulOwner == src
 
@@ -744,10 +762,11 @@ GLOBAL_LIST_EMPTY(personal_objective_minds)
 		return FALSE
 	for(var/X in spell_list)
 		var/obj/effect/proc_holder/spell/S = X
-		if(istype(S, spell))
+		if(S.name == spell.name && S.type == spell.type) //match by name and type to avoid issues with multiple instances of the same spell
 			spell_list -= S
 			qdel(S)
-			success = TRUE // won't return here because of possibility of duplicate spells in spell_list
+			success = TRUE
+			return TRUE // We're deleting only one spell
 	return success
 
 /datum/mind/proc/RemoveAllSpells()

@@ -146,6 +146,9 @@ GLOBAL_LIST_EMPTY(respawncounts)
 		show_chronicle(tab)
 		return
 
+	if(href_list["commandbar_typing"])
+		handle_commandbar_typing(href_list)
+
 	switch(href_list["_src_"])
 		if("holder")
 			hsrc = holder
@@ -265,6 +268,8 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 	GLOB.clients += src
 	GLOB.directory[ckey] = src
 
+	initialize_commandbar_spy()
+
 	GLOB.ahelp_tickets.ClientLogin(src)
 	var/connecting_admin = FALSE //because de-admined admins connecting should be treated like admins.
 	//Admin Authorisation
@@ -276,7 +281,6 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		connecting_admin = TRUE
 	else if(GLOB.deadmins[ckey])
 		verbs += /client/proc/readmin
-		verbs += /client/proc/adminwho
 		connecting_admin = TRUE
 	if(CONFIG_GET(flag/autoadmin))
 		if(!GLOB.admin_datums[ckey])
@@ -906,6 +910,9 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		ip_intel = res.intel
 
 /client/Click(atom/object, atom/location, control, params)
+	if(isatom(object) && HAS_TRAIT(mob, TRAIT_IN_FRENZY))
+		return
+
 	var/ab = FALSE
 	var/list/L = params2list(params)
 
@@ -1000,9 +1007,9 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		if (CONFIG_GET(flag/asset_simple_preload))
 			addtimer(CALLBACK(SSassets.transport, TYPE_PROC_REF(/datum/asset_transport, send_assets_slow), src, SSassets.transport.preload), 5 SECONDS)
 
-		#if (PRELOAD_RSC == 0)
-		addtimer(CALLBACK(src, TYPE_PROC_REF(/client, preload_vox)), 1 MINUTES)
-		#endif
+		// #if (PRELOAD_RSC == 0)
+		// addtimer(CALLBACK(src, TYPE_PROC_REF(/client, preload_vox)), 1 MINUTES)
+		// #endif
 
 //Hook, override it to run code when dir changes
 //Like for /atoms, but clients are their own snowflake FUCK
@@ -1147,7 +1154,7 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 	if(whitelisted != 2)
 		return whitelisted
 	else
-		if(check_whitelist(ckey))
+		if(BC_IsKeyWhitelisted(ckey))
 			whitelisted = 1
 		else
 			whitelisted = 0
@@ -1197,3 +1204,26 @@ GLOBAL_LIST_EMPTY(external_rsc_urls)
 		log_admin("COMMEND: [ckey] commends [theykey].")
 	return
 
+/client/proc/preload_music()
+	if(SSsounds.initialized == TRUE)
+		for(var/sound_path as anything in SSsounds.all_music_sounds)
+			src << load_resource(sound_path, -1)
+
+/**
+ * Ensures the OOC verb is only present for lobby (new_player) mobs or admins.
+ * Call this whenever the client's mob changes (e.g. after Login(), late-join, ghostize, etc.).
+ */
+/client/proc/update_ooc_verb_visibility()
+	// If admin (holder) always keep OOC for moderation.
+	if(holder)
+		if(!( /client/verb/ooc in verbs))
+			verbs += /client/verb/ooc
+		return
+
+	// Non-admins: only lobby new_player retains OOC verb.
+	if(istype(mob, /mob/dead/new_player))
+		if(!( /client/verb/ooc in verbs))
+			verbs += /client/verb/ooc
+	else
+		if(/client/verb/ooc in verbs)
+			verbs -= /client/verb/ooc

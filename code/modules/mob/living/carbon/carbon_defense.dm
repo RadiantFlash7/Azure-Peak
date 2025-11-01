@@ -231,7 +231,9 @@
 		send_item_attack_message(I, user, affecting.name, affecting)
 
 	if(statforce)
-		var/probability = I.get_dismemberment_chance(affecting, user)
+		I.remove_bintegrity(1)
+		var/probability = I.get_dismemberment_chance(affecting, user, useder)
+    
 		if(prob(probability) && affecting.dismember(I.damtype, user.used_intent?.blade_class, user, user.zone_selected))
 			I.add_mob_blood(src)
 			playsound(get_turf(src), I.get_dismember_sound(), 80, TRUE)
@@ -367,13 +369,6 @@
 	M.visible_message("<span class='notice'>[M] shakes [src].</span>", \
 				"<span class='notice'>I shake [src] to get [p_their()] attention.</span>")
 	shake_camera(src, 2, 1)
-	SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "hug", /datum/mood_event/hug)
-	if(HAS_TRAIT(M, TRAIT_FRIENDLY))
-		var/datum/component/mood/mood = M.GetComponent(/datum/component/mood)
-		if (mood.sanity >= SANITY_GREAT)
-			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "friendly_hug", /datum/mood_event/besthug, M)
-		else if (mood.sanity >= SANITY_DISTURBED)
-			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, "friendly_hug", /datum/mood_event/betterhug, M)
 	for(var/datum/brain_trauma/trauma in M.get_traumas())
 		trauma.on_hug(M, src)
 	AdjustStun(-60)
@@ -482,5 +477,11 @@
 /mob/living/carbon/can_hear()
 	. = FALSE
 	var/obj/item/organ/ears/ears = getorganslot(ORGAN_SLOT_EARS)
+	if(isdullahan(src))
+		var/mob/living/carbon/human/user = src
+		var/datum/species/dullahan/dullahan = user.dna.species
+		var/obj/item/bodypart/head/dullahan/head = dullahan.my_head
+		if(dullahan.headless && head.ears)
+			ears = head.ears
 	if((istype(ears) && !ears.deaf) || (src.stat == DEAD)) // 2nd check so you can hear messages when beheaded
 		. = TRUE

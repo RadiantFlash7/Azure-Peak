@@ -1418,7 +1418,7 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_inv_mouth()
 	remove_overlay(MOUTH_LAYER)
 
-	if(!get_bodypart(BODY_ZONE_HEAD)) //Decapitated
+	if(!isdullahan(src) && !get_bodypart(BODY_ZONE_HEAD)) //Decapitated
 		return
 
 	if(client && hud_used && hud_used.inv_slots[SLOT_MOUTH])
@@ -1660,7 +1660,6 @@ generate/load female uniform sprites matching all previously decided variables
 			if(get_altdetail_color())
 				pic.color = get_altdetail_color()
 			standing.overlays.Add(pic)
-
 
 	if(!isinhands && HAS_BLOOD_DNA(src))
 		var/index = "[t_state][sleeveindex]"

@@ -78,15 +78,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	icon_state = "hollow"
 	alpha = 150
 
-/mob/dead/observer/rogue/Move(n, direct)
-	if(world.time < next_gmove)
-		return
-	next_gmove = world.time + 2
-
-	setDir(direct)
-
-	. = ..()
-
 /mob/dead/observer/screye
 //	see_invisible = SEE_INVISIBLE_LIVING
 	sight = 0
@@ -1067,10 +1058,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		set_light(1, 1, 2)
 	else
 		set_light(0, 0, 0)
-
-// Ghosts have no momentum, being massless ectoplasm
-/mob/dead/observer/Process_Spacemove(movement_dir)
-	return 1
 
 /mob/dead/observer/vv_edit_var(var_name, var_value)
 	. = ..()

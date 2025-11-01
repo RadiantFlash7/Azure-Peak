@@ -77,8 +77,6 @@
 	/// What is the mobs real name (name is overridden for disguises etc)
 	var/real_name = null
 
-	/// can this mob move freely in space (should be a trait)
-	var/spacewalk = FALSE
 
 	/**
 	  * back up of the real name during admin possession
@@ -279,6 +277,7 @@
 
 	var/last_dodge = 0
 	var/last_parry = 0
+	var/last_used_double_attack = 0 //Used for Dual Wielder virtue, holds the timer since the double attack was last used
 	var/next_emote = 0
 	var/next_me_emote = 0
 	var/lastpoint = 0

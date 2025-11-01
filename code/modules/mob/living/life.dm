@@ -2,6 +2,9 @@
 	set waitfor = FALSE
 	set invisibility = 0
 
+	if(!client && ai_controller && ai_controller.ai_status == AI_STATUS_OFF)
+		return
+
 	SEND_SIGNAL(src, COMSIG_LIVING_LIFE, seconds, times_fired)
 
 	if((movement_type & FLYING) && !(movement_type & FLOATING))	//TODO: Better floating
@@ -31,8 +34,6 @@
 	if(!loc)
 		return
 
-	//Breathing, if applicable
-	handle_breathing(times_fired)
 	if(HAS_TRAIT(src, TRAIT_SIMPLE_WOUNDS))
 		handle_wounds()
 		handle_embedded_objects()
@@ -49,15 +50,13 @@
 			for(var/datum/wound/wound as anything in get_wounds())
 				wound.heal_wound(0.6)		
 
-	if (QDELETED(src)) // diseases can qdel the mob via transformations
+	if(QDELETED(src)) // diseases can qdel the mob via transformations
 		return
 
 	handle_environment()
 	
 	//Random events (vomiting etc)
 	handle_random_events()
-
-	handle_gravity()
 
 	handle_traits() // eye, ear, brain damages
 	handle_status_effects() //all special effects, stun, knockdown, jitteryness, hallucination, sleeping, etc
@@ -67,11 +66,29 @@
 	if(machine)
 		machine.check_eye(src)
 
-	if(istype(loc, /turf/open/water))
-		handle_inwater(loc)
+	check_drowning()
 
 	if(stat != DEAD)
 		return 1
+
+/mob/living/proc/check_drowning()
+	if(istype(loc, /turf/open/water))
+		handle_inwater(loc)
+
+/mob/living/carbon/human/check_drowning()
+	if(isdullahan(src))
+		var/mob/living/carbon/human = src
+		var/datum/species/dullahan/dullahan = human.dna.species
+		if(dullahan.headless)
+			var/obj/item/bodypart/head/dullahan/drownrelay = dullahan.my_head
+			if(!drownrelay)
+				return
+			if(istype(drownrelay.loc, /turf/open/water))
+				handle_inwater(drownrelay.loc, extinguish = FALSE, force_drown = TRUE)
+			if(istype(loc, /turf/open/water)) // Extinguish ourselves if our body is in water.	
+				extinguish_mob()
+			return
+	. =..()
 
 /mob/living/proc/DeadLife()
 	set invisibility = 0
@@ -86,9 +103,6 @@
 	update_sneak_invis()
 	if(istype(loc, /turf/open/water))
 		handle_inwater(loc)
-
-/mob/living/proc/handle_breathing(times_fired)
-	return
 
 /mob/living/proc/handle_random_events()
 	//random painstun
@@ -113,13 +127,13 @@
 
 /mob/living/proc/handle_wounds()
 	if(stat >= DEAD)
-		for(var/datum/wound/wound as anything in get_wounds())
-			if(istype(wound, /datum/wound))
-				wound.on_death()
+		for(var/datum/wound/wound in get_wounds())
+			wound.on_death()
+
 		return
-	for(var/datum/wound/wound as anything in get_wounds())
-		if(istype(wound, /datum/wound))
-			wound.on_life()
+
+	for(var/datum/wound/wound in get_wounds())
+		wound.on_life()
 
 /obj/item/proc/on_embed_life(mob/living/user, obj/item/bodypart/bodypart)
 	return
@@ -160,26 +174,3 @@
 
 /mob/living/proc/update_damage_hud()
 	return
-
-/mob/living/proc/handle_gravity()
-	var/gravity = mob_has_gravity()
-	update_gravity(gravity)
-
-	if(gravity > STANDARD_GRAVITY)
-		gravity_animate()
-		handle_high_gravity(gravity)
-
-/mob/living/proc/gravity_animate()
-	if(!get_filter("gravity"))
-		add_filter("gravity",1,list("type"="motion_blur", "x"=0, "y"=0))
-	INVOKE_ASYNC(src, PROC_REF(gravity_pulse_animation))
-
-/mob/living/proc/gravity_pulse_animation()
-	animate(get_filter("gravity"), y = 1, time = 10)
-	sleep(10)
-	animate(get_filter("gravity"), y = 0, time = 10)
-
-/mob/living/proc/handle_high_gravity(gravity)
-	if(gravity >= GRAVITY_DAMAGE_TRESHOLD) //Aka gravity values of 3 or more
-		var/grav_stregth = gravity - GRAVITY_DAMAGE_TRESHOLD
-		adjustBruteLoss(min(grav_stregth,3))

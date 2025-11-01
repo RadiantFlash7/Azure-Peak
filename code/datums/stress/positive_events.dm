@@ -272,6 +272,11 @@
 	stressadd = -5
 	desc = span_green("All my problems have washed away!")
 
+/datum/stressevent/peacecake
+	timer = 5 MINUTES
+	stressadd = -3
+	desc = span_green("My problems ease away.")
+
 /datum/stressevent/noble_bowed_to
 	timer = 5 MINUTES
 	stressadd = -3
@@ -326,3 +331,12 @@
 	timer = 999 MINUTES
 	desc = span_green("I'm wielding a BLESSED weapon!")
 
+/datum/stressevent/hand_fed_fruit
+	stressadd = -1
+	timer = 5 MINUTES
+	desc = span_green("How decadent!")
+
+/datum/stressevent/fermented_crab_good
+	stressadd = -1
+	desc = span_green("That fermented crab was not the most pleasant dish ever, but youthful vigor in my body was worth the sacrifice!")
+	timer = 3 MINUTES

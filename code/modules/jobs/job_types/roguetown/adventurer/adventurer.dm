@@ -33,7 +33,6 @@ GLOBAL_VAR_INIT(adventurer_hugbox_duration_still, 3 MINUTES)
 	same_job_respawn_delay = 1 MINUTES
 
 	cmode_music = 'sound/music/cmode/adventurer/combat_outlander2.ogg'
-	job_traits = list(TRAIT_OUTLANDER)
 
 	job_subclasses = list(
 		/datum/advclass/cleric,
@@ -59,31 +58,12 @@ GLOBAL_VAR_INIT(adventurer_hugbox_duration_still, 3 MINUTES)
 		/datum/advclass/noble,
 		/datum/advclass/noble/knighte,
 		/datum/advclass/noble/squire,
-		/datum/advclass/trader,
-		/datum/advclass/trader/doomsayer,
-		/datum/advclass/trader/scholar,
-		/datum/advclass/trader/harlequin,
-		/datum/advclass/trader/peddler,
-		/datum/advclass/trader/brewer,
-		/datum/advclass/trader/cuisiner,
 		/datum/advclass/foreigner,
 		/datum/advclass/foreigner/yoruku,
 		/datum/advclass/foreigner/repentant,
 		/datum/advclass/foreigner/refugee,
 		/datum/advclass/foreigner/slaver
 	)
-
-/datum/job/roguetown/adventurer/after_spawn(mob/living/L, mob/M, latejoin = TRUE)
-	..()
-	if(L)
-		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
-
-		if(GLOB.adventurer_hugbox_duration)
-			///FOR SOME silly FUCKING REASON THIS REFUSED TO WORK WITHOUT A FUCKING TIMER IT JUST FUCKED SHIT UP
-			addtimer(CALLBACK(H, TYPE_PROC_REF(/mob/living/carbon/human, adv_hugboxing_start)), 1)
 
 /mob/living/carbon/human/proc/adv_hugboxing_start()
 	to_chat(src, span_warning("I will be in danger once I start moving."))

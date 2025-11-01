@@ -5,7 +5,7 @@
 	faction = "Station"
 	total_positions = 4
 	spawn_positions = 4
-	allowed_races = RACES_ALL_KINDS
+	allowed_races = ACCEPTED_RACES
 	allowed_sexes = list(MALE, FEMALE)
 	allowed_ages = list(AGE_ADULT)
 	advclass_cat_rolls = list(CTAG_SQUIRE = 20)
@@ -41,9 +41,6 @@
 	. = ..()
 	if(ishuman(L))
 		var/mob/living/carbon/human/H = L
-		H.advsetup = 1
-		H.invisibility = INVISIBILITY_MAXIMUM
-		H.become_blind("advsetup")
 		if(istype(H.cloak, /obj/item/clothing/cloak/stabard/surcoat/guard))
 			var/obj/item/clothing/S = H.cloak
 			var/index = findtext(H.real_name, " ")
@@ -58,7 +55,7 @@
 	tutorial = "A hopeful for the next generation of knightly mounted lancers and infantry pike specialists, \
 	your training with polearms sets you apart from other squires."
 	outfit = /datum/outfit/job/roguetown/squire/lancer
-		
+
 	category_tags = list(CTAG_SQUIRE)
 	traits_applied = list(TRAIT_MEDIUMARMOR)
 	subclass_stats = list(
@@ -84,12 +81,15 @@
 	)
 
 /datum/outfit/job/roguetown/squire/lancer/pre_equip(mob/living/carbon/human/H)
+	. = ..()
+	H.verbs |= /mob/proc/haltyell_exhausting
 	r_hand = /obj/item/rogueweapon/spear
 	armor = /obj/item/clothing/suit/roguetown/armor/chainmail
 	gloves = /obj/item/clothing/gloves/roguetown/leather
 	wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
 	pants = /obj/item/clothing/under/roguetown/chainlegs/iron
 	backr = /obj/item/storage/backpack/rogue/satchel
+	backl = /obj/item/rogueweapon/scabbard/gwstrap
 	backpack_contents = list(
 		/obj/item/storage/belt/rogue/pouch,
 		/obj/item/clothing/neck/roguetown/chaincoif,
@@ -101,7 +101,7 @@
 	tutorial = "Your training has been singularly focused on the intricacies of sword, a weapon whose versatility \
 	belies the difficulty of its use."
 	outfit = /datum/outfit/job/roguetown/squire/footman
-		
+
 	category_tags = list(CTAG_SQUIRE)
 	traits_applied = list(TRAIT_MEDIUMARMOR)
 	subclass_stats = list(
@@ -125,6 +125,8 @@
 	)
 
 /datum/outfit/job/roguetown/squire/footman/pre_equip(mob/living/carbon/human/H)
+	. = ..()
+	H.verbs |= /mob/proc/haltyell_exhausting
 	armor = /obj/item/clothing/suit/roguetown/armor/chainmail
 	gloves = /obj/item/clothing/gloves/roguetown/leather
 	wrists = /obj/item/clothing/wrists/roguetown/bracers/leather
@@ -138,13 +140,13 @@
 	H.adjust_blindness(-3)
 	if(H.mind)
 		var/weapons = list("Iron Sword","Cudgel",)
-		var/weapon_choice = input("Choose your weapon.", "TAKE UP ARMS") as anything in weapons
+		var/weapon_choice = input(H, "Choose your weapon.", "TAKE UP ARMS") as anything in weapons
 		H.set_blindness(0)
 		switch(weapon_choice)
 			if("Iron Sword")
 				beltr = /obj/item/rogueweapon/scabbard/sword
 				r_hand = /obj/item/rogueweapon/sword/iron
-			if("Cudgel")	
+			if("Cudgel")
 				beltr = /obj/item/rogueweapon/mace/cudgel
 
 /datum/advclass/squire/skirmisher
@@ -153,7 +155,7 @@
 	has become more apparent, and hopefuls such as yourself have been trained into the future of elite skirmisher \
 	troops."
 	outfit = /datum/outfit/job/roguetown/squire/skirmisher
-		
+
 	category_tags = list(CTAG_SQUIRE)
 	traits_applied = list(TRAIT_DODGEEXPERT)
 	subclass_stats = list(
@@ -177,6 +179,8 @@
 	)
 
 /datum/outfit/job/roguetown/squire/skirmisher/pre_equip(mob/living/carbon/human/H)
+	. = ..()
+	H.verbs |= /mob/proc/haltyell_exhausting
 	beltr = /obj/item/quiver/arrows
 	armor = /obj/item/clothing/suit/roguetown/armor/leather/studded
 	pants = /obj/item/clothing/under/roguetown/trou/leather

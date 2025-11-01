@@ -44,8 +44,14 @@
 	/// Spellpoints. If More than 0, Gives Prestidigitation & the Learning Spell.
 	var/subclass_spellpoints = 0
 
+	/// List of items to put in an item stash
+	var/list/subclass_stashed_items = list()
+
 	/// Extra fluff added to the role explanation in class selection.
 	var/extra_context
+
+	/// Set to FALSE to skip apply_character_post_equipment() which applies virtue, flaw, loadout
+	var/applies_post_equipment = TRUE
 
 /datum/advclass/proc/equipme(mob/living/carbon/human/H, dummy = FALSE)
 	// input sleeps....
@@ -89,12 +95,18 @@
 		for(var/skill in subclass_skills)
 			H.adjust_skillrank_up_to(skill, subclass_skills[skill], TRUE)
 
+	if(length(subclass_stashed_items))
+		if(!H.mind)
+			return
+		for(var/stashed_item in subclass_stashed_items)
+			H.mind?.special_items[stashed_item] = subclass_stashed_items[stashed_item]
 	if(subclass_spellpoints > 0)
 		H.mind?.adjust_spellpoints(subclass_spellpoints)
 
 	// After the end of adv class equipping, apply a SPECIAL trait if able
 
-	apply_character_post_equipment(H)
+	if(applies_post_equipment)
+		apply_character_post_equipment(H)
 
 /datum/advclass/proc/post_equip(mob/living/carbon/human/H)
 	addtimer(CALLBACK(H,TYPE_PROC_REF(/mob/living/carbon/human, add_credit), TRUE), 20)

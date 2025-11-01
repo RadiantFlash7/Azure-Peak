@@ -11,8 +11,9 @@
 	return TRUE
 
 /client/proc/get_looc()
-	var/msg = input(src, null, "looc \"text\"") as text|null
+	var/msg = input(src, "", "looc") as text|null
 	do_looc(msg, FALSE)
+	
 
 /client/verb/looc(msg as text)
 	set name = "LOOC"
@@ -42,8 +43,13 @@
 		to_chat(src, span_danger("I cannot use LOOC (perma muted)."))
 		return
 	
-	if(isobserver(mob))
+	if(isobserver(mob) && !holder)
 		to_chat(src, span_danger("I cannot use LOOC while dead."))
+		return
+
+	// Lobby restriction: disable LOOC for normal players still in the lobby (new_player)
+	if(!holder && istype(mob, /mob/dead/new_player))
+		to_chat(src, span_danger("I cannot use LOOC while in the lobby. Join the round or observe first."))
 		return
 
 	if(!mob)
